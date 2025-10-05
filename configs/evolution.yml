@@ -1,0 +1,65 @@
+# config 
+general: 
+  cuda: true
+  seed: 0
+  outputs: outputs # path for outputs
+  save_outputs: true
+
+input: 
+  pdb: "inputs/2VVB.pdb" # the pdb
+
+
+evolution: 
+  n_generations: 4
+  n_individuals: 3
+  n_mutations: 4
+
+seq_model: ligandmpnn   # choices: ligandmpnn or proteinmpnn
+
+models: 
+  metal3d:
+    model_path: ./models/metal3d/weights/metal_0.5A_v3_d0.2_16Abox.pth
+    max_metal_p: 0.2
+  
+  ligandmpnn: 
+    model_path: ./models/ligandmpnn/model_params/ligandmpnn_v_32_020_25.pt
+    packer_path: ./models/ligandmpnn/model_params/ligandmpnn_sc_v_32_002_16.pt
+    fixed_residues: ""       # e.g. "A12 A13 A14 B2 B25"
+    bias_AA: ""              # e.g. "A:-1.024,P:2.34,C:-12.34"
+    bias_AA_per_residue: ""  # e.g. "A12:A:-1.024,P:2.34"
+    omit_AA: "C"
+    omit_AA_per_residue: ""
+    symmetry_residues: ""    # e.g. "A12,A13,A14|C2,C3|A5,B6"
+    symmetry_weights: ""
+    homo_oligomer: 0
+    sc_num_denoising_steps: 8
+    sc_num_samples: 1
+    ligand_mpnn_cutoff_for_score: 20.0
+    temperature: 0.9
+    zero_indexed: 0
+    autoregressive_score: 0
+    single_aa_score: 1
+    chains_to_design: ""
+    parse_these_chains_only: ""
+    parse_atoms_with_zero_occupancy: 0
+    verbose: false
+  
+  proteinmpnn: 
+    model_path: ./models/ligandmpnn/model_params/proteinmpnn_v_48_010.pt
+    ligand_mpnn_cutoff_for_score: 20.0
+    temperature: 0.7
+    zero_indexed: 0
+    autoregressive_score: 0
+    single_aa_score: 1
+    fixed_residues: ""       # e.g. "A12 A13 A14 B2 B25"
+    bias_AA: ""              # e.g. "A:-1.024,P:2.34,C:-12.34"
+    bias_AA_per_residue: ""  # e.g. "A12:A:-1.024,P:2.34"
+    omit_AA: "C"
+    omit_AA_per_residue: ""
+    symmetry_residues: ""    # e.g. "A12,A13,A14|C2,C3|A5,B6"
+    symmetry_weights: ""
+    homo_oligomer: 0
+    chains_to_design: ""
+    parse_these_chains_only: ""
+    parse_atoms_with_zero_occupancy: 0
+    verbose: false
