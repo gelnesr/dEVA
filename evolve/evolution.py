@@ -47,7 +47,10 @@ class Evolution:
 
         logger.info(f"Checkpoint directory set to: {self.checkpoint_dir}")
 
-    def find_latest_checkpoint(self):
+    def reinitialize(self):
+        self.utils.reinitialize(self.sampler)
+
+    def find_latest_checkpoint(self):   
         """Find the latest checkpoint file in the checkpoint directory"""
         
         # Look for checkpoint files with pattern pareto_front_gen*.pkl
@@ -76,6 +79,7 @@ class Evolution:
         return latest_file, latest_gen
 
     def load_checkpoint(self, checkpoint_file):
+        self.reinitialize()
         """Load population from checkpoint file"""
         with open(checkpoint_file, "rb") as f:
             pareto_front = pickle.load(f)
@@ -99,6 +103,7 @@ class Evolution:
         return True
 
     def evolve(self):
+        self.reinitialize()
         # Auto-detect latest checkpoint or start fresh
         latest_checkpoint, latest_gen = self.find_latest_checkpoint()
         if latest_checkpoint:

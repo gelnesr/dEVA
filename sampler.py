@@ -20,8 +20,7 @@ class Sampler(object):
         pass
     
     def init_seq(self, individual: Individual):
-        if self.fixed_residues is None:
-            self.fixed_residues = self.seq_model.fixed_resis()
+        self.get_fixed_residues()
         
         self.seq_model.init_seq(individual)
         for k, m in self.rem_models.items():
@@ -33,4 +32,5 @@ class Sampler(object):
             m.score(individual)
 
     def get_fixed_residues(self):
+        self.fixed_residues = self.seq_model.fixed_resis()
         return self.fixed_residues

@@ -12,6 +12,11 @@ from .data_utils import (
     restype_str_to_int,
 )
 
+def get_var_residues(args, pdb):
+    var_residues = [item for item in args.var_residues.split()]
+
+    return var_residues
+
 def get_fixed_residues(args, pdb):
     fixed_residues = [item for item in args.fixed_residues.split()]
 
@@ -92,7 +97,6 @@ def omit_aa(args, encoded_residues, encoded_residue_dict, omit_AA_per_residue_mu
         )
     if args.omit_AA_per_residue:
         omit_dict = omit_AA_per_residue_multi[pdb]
-        print(omit_dict)
         for residue_name, v1 in omit_dict.items():
             if residue_name in encoded_residues:
                 i1 = encoded_residue_dict[residue_name]
@@ -142,7 +146,8 @@ def prepare_ligandmpnn(args,
     omit_AA_per_residue = omit_aa(args, encoded_residues, design_params['omit_AA_per_residue'], device)
 
     fixed_residues = design_params['fixed_residues']
-    
+    var_residues = design_params['var_residues']
+
     if len(args.chains_to_design) != 0:
         chains_to_design_list = args.chains_to_design.split(",")
     else:
@@ -153,10 +158,16 @@ def prepare_ligandmpnn(args,
         dtype=np.int32), 
         device=device,
     )
-    fixed_positions = torch.tensor( 
-        [int(item.strip() not in fixed_residues) for item in encoded_residues], 
-        device=device, 
-    )
+    if len(var_residues) > 0:
+        fixed_positions = torch.tensor( 
+            [int(item.strip() in var_residues) for item in encoded_residues], 
+            device=device, 
+        )
+    else:
+        fixed_positions = torch.tensor( 
+            [int(item.strip() not in fixed_residues) for item in encoded_residues], 
+            device=device, 
+        )
 
     protein_dict['fixed_positions'] = fixed_positions
 

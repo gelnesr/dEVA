@@ -27,6 +27,10 @@ class NSGA2Utils:
         self.num_mutations = num_mutations
         self.fixed_idx = None
 
+    def reinitialize(self, sampler):
+        if self.fixed_idx is None:
+            self.fixed_idx = sampler.get_fixed_residues()
+
     def create_initial_population(self, start_index=0):
         population = Population()
 
@@ -106,8 +110,6 @@ class NSGA2Utils:
         children = []
 
         idx = 0
-        if self.fixed_idx is None:
-            self.fixed_idx = sampler.get_fixed_residues()
 
         while len(children) < len(population):
             parent1, parent2 = self.__tournament(population)
@@ -136,10 +138,15 @@ class NSGA2Utils:
         for child, parent in [(child1, individual1), (child2, individual2)]:
             child.name = parent.name
             child.sequence_ = parent.sequence_.clone()
-
+        
         device = child1.sequence_.device
-        L = len(individual1.sequence)
 
+        child2.sequence_ = child2.sequence_.to(device)
+        child1.sequence_ = child1.sequence_.to(device)
+        individual2.sequence_ = individual2.sequence_.to(device)
+        individual1.sequence_ = individual1.sequence_.to(device)
+
+        L = len(individual1.sequence)
         k1, k2 = sorted([random.randint(0, L), random.randint(0, L)])
         seg_mask = torch.zeros(L, dtype=torch.bool, device=device).squeeze()
         seg_mask[k1:k2] = True
@@ -147,7 +154,7 @@ class NSGA2Utils:
         self.fixed_idx = self.fixed_idx.to(device)
         # swap only where segment AND mutable
         swap_mask = seg_mask & self.fixed_idx
-        swap_mask = swap_mask.unsqueeze(0) 
+        swap_mask = swap_mask.unsqueeze(0).to(device)
 
         child1.sequence_[swap_mask] = individual2.sequence_[swap_mask]
         child2.sequence_[swap_mask] = individual1.sequence_[swap_mask]

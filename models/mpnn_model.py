@@ -163,11 +163,15 @@ class MPNNModel(BaseModel):
         return probs_1d, probs_2d.detach().cpu()
 
     def fixed_resis(self, indices=False): 
-        return self.protein_dict["fixed_positions"].to(self.device).to(torch.bool)
+        return ~self.protein_dict["fixed_positions"].to(self.device).to(torch.bool)
 
     def design_constraints(self):
         # design constraints
         self.fixed_residues = get_fixed_residues(self.model_config, self.pdb)
+        self.var_residues = get_var_residues(self.model_config, self.pdb)
+
+        if len(self.var_residues) > 0 and len(self.fixed_residues) > 0:
+            raise ValueError('Can only specify var residues or fixed residues, not both')
         self.bias_AA, self.bias_AA_per_residue = get_bias_aa(self.model_config, self.pdb, self.device)
         self.omit_AA, self.omit_AA_per_residue = get_omit_aa(self.model_config, self.pdb, self.device)
         self.parse_these_chains_only_list = get_parse_chains(self.model_config, self.pdb)
@@ -175,6 +179,7 @@ class MPNNModel(BaseModel):
             
         # compile
         self.design_params = {
+            'var_residues': self.var_residues,
             'fixed_residues': self.fixed_residues,
             'bias_AA': self.bias_AA, 
             'bias_AA_per_residue': self.bias_AA_per_residue, 
