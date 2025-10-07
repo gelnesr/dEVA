@@ -23,6 +23,7 @@ class Evolution:
         num_mutations=4,
         sampler=None,
         seed=0,
+        checkpoint_freq=1,
         checkpoint_dir=None,  # Checkpoint directory for auto-loading
     ):
         self.utils = NSGA2Utils(
@@ -42,7 +43,8 @@ class Evolution:
         self.children = None
         self.seed = seed
         self.checkpoint_dir = checkpoint_dir
-        
+        self.checkpoint_freq = checkpoint_freq
+
         logger.info(f"Checkpoint directory set to: {self.checkpoint_dir}")
 
     def find_latest_checkpoint(self):
@@ -166,10 +168,10 @@ class Evolution:
             first_fronts.append(self.population.fronts[0])
 
             # === Pareto front checkpointing every 5 generations ===
-            if gen % 1 == 0:
+            if gen % self.checkpoint_freq == 0:
                 checkpoint_path = os.path.join(self.checkpoint_dir, f"pareto_front_gen{gen}.pkl")
                 with open(checkpoint_path, "wb") as f:
                     pickle.dump(self.population.fronts[0], f)
 
-        evo_out = {'best': self.population.fronts[0], 'statistics': staistics, 'fronts': first_fronts}
+        evo_out = {'best': self.population.fronts[0], 'statistics': statistics, 'fronts': first_fronts}
         return evo_out

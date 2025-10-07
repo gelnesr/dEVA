@@ -70,10 +70,10 @@ def get_encoded_residues(protein_dict, icodes):
     
     return encoded_residues, encoded_residue_dict, encoded_residue_dict_rev
 
+# fix/streamline
 def bias_aa(args, encoded_residues, bias_AA_per_residue_multi, device='cuda'):
     bias_AA_per_residue = torch.zeros([len(encoded_residues), 21], device=device, dtype=torch.float32)
     
-    # fix/streamline
     if args.bias_AA_per_residue:
         bias_dict = bias_AA_per_residue_multi[pdb]
         for residue_name, v1 in bias_dict.items():
@@ -85,13 +85,14 @@ def bias_aa(args, encoded_residues, bias_AA_per_residue_multi, device='cuda'):
                         bias_AA_per_residue[i1, j1] = v2
     return bias_AA_per_residue
 
+# fix/streamline
 def omit_aa(args, encoded_residues, encoded_residue_dict, omit_AA_per_residue_multi, device='cuda'):
     omit_AA_per_residue = torch.zeros(
             [len(encoded_residues), 21], device=device, dtype=torch.float32
         )
-    # fix/streamline
     if args.omit_AA_per_residue:
         omit_dict = omit_AA_per_residue_multi[pdb]
+        print(omit_dict)
         for residue_name, v1 in omit_dict.items():
             if residue_name in encoded_residues:
                 i1 = encoded_residue_dict[residue_name]
@@ -101,11 +102,6 @@ def omit_aa(args, encoded_residues, encoded_residue_dict, omit_AA_per_residue_mu
                         omit_AA_per_residue[i1, j1] = 1.0
     
     return omit_AA_per_residue
-
-def fixed_resis(fixed_residues, encoded_residues, device='cuda'):
-    fixed_positions = torch.tensor([int(item not in fixed_residues) for item in encoded_residues], device=device)
-
-    return fixed_positions
 
 def get_symmetry(args, encoded_residue_dict):
     # specify which residues are linked
@@ -146,41 +142,34 @@ def prepare_ligandmpnn(args,
     omit_AA_per_residue = omit_aa(args, encoded_residues, design_params['omit_AA_per_residue'], device)
 
     fixed_residues = design_params['fixed_residues']
-    fixed_positions = fixed_resis(fixed_residues, encoded_residues, device)
     
-    buried_positions = torch.zeros_like(fixed_positions)
-    interface_positions = torch.zeros_like(fixed_positions)
-    protein_dict["membrane_per_residue_labels"] = 2 * buried_positions * (
-            1 - interface_positions
-        ) + 1 * interface_positions * (1 - buried_positions)
-
     if len(args.chains_to_design) != 0:
         chains_to_design_list = args.chains_to_design.split(",")
     else:
         chains_to_design_list = protein_dict["chain_letters"]
     
-    chain_mask = torch.tensor(np.array([
-        item in chains_to_design_list for item in protein_dict["chain_letters"]], dtype=np.int32), device=device,)
+    chain_mask = torch.tensor(
+        np.array([ item in chains_to_design_list for item in protein_dict["chain_letters"]], 
+        dtype=np.int32), 
+        device=device,
+    )
+    fixed_positions = torch.tensor( 
+        [int(item.strip() not in fixed_residues) for item in encoded_residues], 
+        device=device, 
+    )
+
+    protein_dict['fixed_positions'] = fixed_positions
 
     if fixed_residues:
         protein_dict["chain_mask"] = chain_mask * fixed_positions
     else:
         protein_dict["chain_mask"] = chain_mask
 
-    # Verbose
-    PDB_residues_to_be_redesigned = [
-        encoded_residue_dict_rev[item]
-        for item in range(protein_dict["chain_mask"].shape[0])
-        if protein_dict["chain_mask"][item] == 1
-    ]
-    
-    PDB_residues_to_be_fixed = [
-        encoded_residue_dict_rev[item] 
-        for item in range(protein_dict["chain_mask"].shape[0]) 
-        if protein_dict["chain_mask"][item] == 0 
-    ]
-
     if args.verbose:
+        mask = protein_dict["chain_mask"].bool()
+        PDB_residues_to_be_redesigned = [encoded_residue_dict_rev[i] for i in mask.nonzero(as_tuple=True)[0].tolist()]
+        PDB_residues_to_be_fixed = [encoded_residue_dict_rev[i] for i in (~mask).nonzero(as_tuple=True)[0].tolist()]
+
         print("These residues will be redesigned: ", PDB_residues_to_be_redesigned)
         print("These residues will be fixed: ", PDB_residues_to_be_fixed)
 
@@ -231,7 +220,8 @@ def run_ligandmpnn(args, protein_dict, feature_dict, model, device='cuda'):
             for i, atom_type in enumerate(atom_types):
                 print(f"Type: {element_dict_rev[atom_type]}, Coords {atom_coords[i]}, Mask {atom_mask[i]}")
 
-    output_dict = model.sample(feature_dict)
+    with torch.inference_mode():
+        output_dict = model.sample(feature_dict)
     
     # compute confidence scores
     loss, loss_per_residue = get_score(

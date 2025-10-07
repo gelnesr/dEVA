@@ -162,6 +162,9 @@ class MPNNModel(BaseModel):
         
         return probs_1d, probs_2d.detach().cpu()
 
+    def fixed_resis(self, indices=False): 
+        return self.protein_dict["fixed_positions"].to(self.device).to(torch.bool)
+
     def design_constraints(self):
         # design constraints
         self.fixed_residues = get_fixed_residues(self.model_config, self.pdb)

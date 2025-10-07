@@ -10,21 +10,22 @@ input:
 
 
 evolution: 
-  n_generations: 4
-  n_individuals: 3
+  n_generations: 5
+  n_individuals: 2
   n_mutations: 4
+  checkpoint_freq: 1
 
 seq_model: ligandmpnn   # choices: ligandmpnn or proteinmpnn
 
 models: 
   metal3d:
-    model_path: ./models/metal3d/weights/metal_0.5A_v3_d0.2_16Abox.pth
+    model_path: /scratch/users/gelnesr/metal3d_data_filtered/27sep25/metal3d_clean_ec.pth #./models/metal3d/weights/metal_0.5A_v3_d0.2_16Abox.pth
     max_metal_p: 0.2
   
   ligandmpnn: 
     model_path: ./models/ligandmpnn/model_params/ligandmpnn_v_32_020_25.pt
     packer_path: ./models/ligandmpnn/model_params/ligandmpnn_sc_v_32_002_16.pt
-    fixed_residues: ""       # e.g. "A12 A13 A14 B2 B25"
+    fixed_residues: "X1 X2 X3 X4 X5 X6 X7"       # e.g. "A12 A13 A14 B2 B25"
     bias_AA: ""              # e.g. "A:-1.024,P:2.34,C:-12.34"
     bias_AA_per_residue: ""  # e.g. "A12:A:-1.024,P:2.34"
     omit_AA: "C"

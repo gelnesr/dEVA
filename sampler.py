@@ -12,7 +12,7 @@ class Sampler(object):
         super(Sampler, self).__init__()
         self.rem_models = models
         self.seq_model = self.rem_models.pop('seq_model')
-
+        self.fixed_residues = None
         if hasattr(self.seq_model, 'init_seq') and callable(getattr(self.seq_model, 'init_seq')):
             pass
         else:
@@ -20,6 +20,9 @@ class Sampler(object):
         pass
     
     def init_seq(self, individual: Individual):
+        if self.fixed_residues is None:
+            self.fixed_residues = self.seq_model.fixed_resis()
+        
         self.seq_model.init_seq(individual)
         for k, m in self.rem_models.items():
             m.score(individual)
@@ -29,4 +32,5 @@ class Sampler(object):
         for k, m in self.rem_models.items():
             m.score(individual)
 
-
+    def get_fixed_residues(self):
+        return self.fixed_residues

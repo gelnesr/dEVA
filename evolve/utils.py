@@ -1,11 +1,11 @@
-from evolve.population import Population
-from evolve.individual import Individual
-
+import torch
 import random
 import logging
 import numpy as np
 from copy import deepcopy
 
+from evolve.population import Population
+from evolve.individual import Individual
 
 class NSGA2Utils:
     def __init__(
@@ -25,6 +25,7 @@ class NSGA2Utils:
         self.crossover_param = crossover_param
         self.seed = seed
         self.num_mutations = num_mutations
+        self.fixed_idx = None
 
     def create_initial_population(self, start_index=0):
         population = Population()
@@ -101,10 +102,13 @@ class NSGA2Utils:
         else:
             return -1
 
-    def create_children(self, population, sampler=None, generation=0):
+    def create_children(self, population, generation=0, sampler=None):
         children = []
 
         idx = 0
+        if self.fixed_idx is None:
+            self.fixed_idx = sampler.get_fixed_residues()
+
         while len(children) < len(population):
             parent1, parent2 = self.__tournament(population)
 
@@ -123,12 +127,8 @@ class NSGA2Utils:
 
         return children
 
-    def __crossover(self, individual1, individual2, generation, index, fixed_idx=None, var_idx=None):
-        """Two point crossover"""
+    def __crossover(self, individual1, individual2, generation, index, var_idx=None):
 
-        fixed_idx = fixed_idx or []
-        var_idx = var_idx or []
-        
         child1 = Individual(index=index, generation=generation)
         child2 = Individual(index=index+1, generation=generation)
         
@@ -137,14 +137,20 @@ class NSGA2Utils:
             child.name = parent.name
             child.sequence_ = parent.sequence_.clone()
 
-        num_positions = len(individual1.sequence)
+        device = child1.sequence_.device
+        L = len(individual1.sequence)
 
-        # Crossover point generation
-        k1, k2 = sorted([random.randint(0, num_positions), random.randint(0, num_positions)])
+        k1, k2 = sorted([random.randint(0, L), random.randint(0, L)])
+        seg_mask = torch.zeros(L, dtype=torch.bool, device=device).squeeze()
+        seg_mask[k1:k2] = True
 
-        # Perform crossover in-place 
-        child1.sequence_[k1:k2] = individual2.sequence_[k1:k2]
-        child2.sequence_[k1:k2] = individual1.sequence_[k1:k2]
+        self.fixed_idx = self.fixed_idx.to(device)
+        # swap only where segment AND mutable
+        swap_mask = seg_mask & self.fixed_idx
+        swap_mask = swap_mask.unsqueeze(0) 
+
+        child1.sequence_[swap_mask] = individual2.sequence_[swap_mask]
+        child2.sequence_[swap_mask] = individual1.sequence_[swap_mask]
         
         return child1, child2
 

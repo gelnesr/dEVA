@@ -10,7 +10,11 @@ class Problem:
         self.fitness_keys = fitness_keys
         self.seq_model = seq_model
         self.write_fasta = False
+        self.fixed_residues = self.design_sampler.get_fixed_residues()
 
+    def fixed_resis(self):
+        return self.fixed_residues
+    
     def generate_individual(self, generation=0, index=0):
         individual = Individual(generation=generation, index=index)
         self.design_sampler.init_seq(individual)
