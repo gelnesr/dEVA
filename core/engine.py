@@ -17,7 +17,7 @@ logger = logging.getLogger("evolution")
 logger.setLevel(logging.DEBUG)
 
 class EvolutionEngine:
-    def __init__(self, config: str='configs/evolution.yml'):
+    def __init__(self, config: str='configs/evolution.yml', pdb: str=None, out_folder: str=None):
         with open(config, 'r') as f:
             self.config = OmegaConf.load(f)
         self.seed = self.config.general.seed
@@ -26,8 +26,14 @@ class EvolutionEngine:
         self.device = torch.device('cpu')
         if self.config.general.cuda:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if out_folder is not None:
+            print(f"Warning: ignoring output folder in yml. Using {out_folder} instead.")
+            self.config.general.outputs = out_folder
         self.out_folder = self.config.general.outputs
         ensure_dir(self.out_folder)
+        if pdb is not None:
+            print(f"Warning: ignoring pdb in yml. Using {pdb} instead.")
+            self.config.input.pdb = pdb
         self.pdb, self.pdb_name = self.check_pdb(self.config.input.pdb)
         self.models = None
         self.seq_model = self.config.seq_model
