@@ -1,4 +1,4 @@
-# EVOLVE: Adding New Objectives
+# EVOLVE: multi-objective protein design
 
 This guide explains how to add new objectives (scoring functions) to the EVOLVE protein design platform.
 
