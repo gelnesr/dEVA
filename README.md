@@ -1,10 +1,10 @@
-# EVOLVE: multi-objective protein design
+# dEVA: a module multi-objective framework for protein design
 
-This guide explains how to add new objectives (scoring functions) to the EVOLVE protein design platform.
+This guide explains how to add new objectives (scoring functions) to the dEVA protein design platform.
 
 ## Overview
 
-In EVOLVE, objectives are implemented as **models** that score protein designs. Each objective is a Python class that:
+In dEVA, objectives are implemented as **models** that score protein designs. Each objective is a Python class that:
 1. Inherits from `BaseModel`
 2. Implements `setup()` and `score()` methods
 3. Is registered with a unique name
@@ -129,7 +129,7 @@ def setup(self, config: Dict, device: str = 'cpu') -> None:
 
 ### Step 4: Use Your Objective
 
-Run EVOLVE with your new objective:
+Run dEVA with your new objective:
 
 ```bash
 python run.py --config configs/your_config.yml --models seq_model my_objective
