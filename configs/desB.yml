@@ -2,11 +2,11 @@
 general: 
   cuda: true
   seed: 2
-  outputs: /scratch/users/gelnesr/nsga_metal_ec/des198_r7/des198_diZn_4MUP_modeled # path for outputs
+  outputs: /scratch/users/gelnesr/desB # path for outputs
   save_outputs: true
 
 input: 
-  pdb: inputs/des198_diZn_4MUP_modeled.pdb #"inputs/2VVB.pdb" # the pdb
+  pdb: inputs/desB.pdb #"inputs/2VVB.pdb" # the pdb
 
 evolution: 
   n_generations: 35
@@ -21,7 +21,7 @@ models:
     metals: null
 
   metal3d:
-    model_path: /home/users/gelnesr/Metal3D/weights/metal3d_clean_ec.pth #./models/metal3d/weights/metal_0.5A_v3_d0.2_16Abox.pth
+    model_path: ./models/metal3d/weights/metal3d_clean_ec.pth #./models/metal3d/weights/metal_0.5A_v3_d0.2_16Abox.pth
     max_metal_p: 0.2
     threshold: 5
 
