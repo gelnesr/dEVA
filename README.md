@@ -5,7 +5,7 @@
 > [!NOTE]
 > An updated version of dEVA is actively maintained at [gelnesr/dEVA](https://github.com/gelnesr/dEVA). If you have any issues, please report it there and will get back to you ASAP.
 
-This work describes dEVA, first introduced in [Zero-shot design of a de novo metalloenzyme]([https://github.com/gelnesr/dEVA](https://www.biorxiv.org/content/10.64898/2026.04.23.720277v1)).
+This work describes dEVA, first introduced in [Zero-shot design of a de novo metalloenzyme](https://www.biorxiv.org/content/10.64898/2026.04.23.720277v1).
 
 This guide explains how to add new objectives (scoring functions) to the dEVA protein design platform. While catered for structure-based protein design, in principle the code here can be modified for any multi-objective generation. 
 
