@@ -1,6 +1,12 @@
-# dEVA: a module multi-objective framework for protein design
+# dEVA: design by EVolutionary Algorithm
+## a multi-objective modular framework for protein design
 
-This guide explains how to add new objectives (scoring functions) to the dEVA protein design platform.
+![image](assets/dEVA.png)
+
+> [!NOTE]
+> An updated version of dEVA is actively maintained at [gelnesr/dEVA](https://github.com/gelnesr/dEVA). If you have any issues, please report it there and will get back to you ASAP.
+
+This guide explains how to add new objectives (scoring functions) to the dEVA protein design platform. This allows for a modular multi-objective design framework. While catered for structure-based protein design, in principle this can be rewritten for any kind of multi-objective generation. 
 
 ## Overview
 
